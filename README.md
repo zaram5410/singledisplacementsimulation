@@ -1,2 +1,2 @@
 # drafter-deployment-template-v1
-Your first Drafter website!
+Download both the main function and the helper functions. Both are needed to run the project.
