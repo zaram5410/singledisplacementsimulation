@@ -3,8 +3,6 @@ from bakery import assert_equal
 from dataclasses import dataclass
 import random
 activity = ["Li","K","Ba","Ca","Na","Mg","Al","Mn","Zn","Cr","Fe","Cd","Co","Ni","Sn","Pb","H2","Cu","Ag","Hg","Pt","Au"]
-soluable = ["NO3","ClO4","Cl","I","Na","NH4","K"] #doesn't work
-insoluable = ["CO3","PO4","OH","S"] #doesn't work
 
 def get_reactant_number(reactant: str) -> int:
     if reactant not in activity:
@@ -27,30 +25,21 @@ def reaction_works(reactant1: str, reactant2: str) -> int:
     if reactant1_number < reactant2_number:
         return 1
     else:
-        return 0
-"""  
-def solution_reaction_works(reactant1: str, reactant2: str) -> int:
-    
-    if reactant1 not in soluable and reactant2 not in soluable:
-        if reactant1 not in insoluable and reactant2 not in insoluable:
-            return -1
-    else:
-        for element in soluable:
-            if element in reactant1:
-                if element in reactant2:
-                    return 1
-                else:
-    
-    pass
- """                   
+        return 0             
                     
-        
-    
+ 
 assert_equal(reaction_works("Li","Al"), True)
 assert_equal(reaction_works("Al","Li"), False)
 assert_equal(reaction_works("Ni","Na"), False)
 assert_equal(reaction_works("Sn","Sn"), False)
 assert_equal(reaction_works("Je","Sn"), None)
+
+@dataclass
+class Question:
+    reactant1 : str
+    reactant2: str
+    expected_products : str
+    will_work : bool
 
 @dataclass
 class State:
@@ -60,20 +49,15 @@ class State:
     anion : str
     products : str
     score : int
-    #answer = list[Answer] needs list somewhere
-"""
-@dataclass
-class Answer:
-    reactant_1 : str
-    reactant_2 : str
-    will_work : bool
-    why: str
-"""
-
-@dataclass
-class Practice_mode:
-    reactant1 : str
-    reactant2: str
+    questions : list[Question]
+    position : int
+    
+QUESTIONS = [
+    Question("Fe(s)","CuSO4(aq)","FeSO4(aq) + Cu(s)",True),
+    Question("Cu(s)","HCl(aq)","No reaction",False),
+    Question("2Na(s)","2H2O(l)","2NaOH(aq) + H2(g)",True),
+    Question("Ag(s)","ZnSO4(aq)","No reaction",False)
+    ]
 
 @route
 def index(state:State) -> Page:
@@ -125,27 +109,21 @@ def react(state:State,first_reactant: str, second_reactant: str, attachment: str
 
 @route
 def practice_page(state:State) -> Page:
+    state.position = random.randint(0,3) #right boundary will change
+    question = state.questions[state.position]
     return Page(state, [
         Header("Practice mode!"),
         "Instructions: Two reactants will appear below. See if they react or not!",
-        "This is a WIP!",
         "\n",
         "Score:",
         state.score,
         "\n",
-        #this space will pull in random compounds from a database. Still trying to figure out how to do this.
-        Button("Will react","practice_explanation"),
-        Button("Will not react","practice_explanation"),
+        question.reactant1, " + ", question.reactant2,
+        Button("Will react","practice_explanation", Argument("chosen",True)),
+        Button("Will not react","practice_explanation",Argument("chosen",False)),
         Button("Check Series","activity_list"),
         Button("Go Back","index")
         ])
-
-#this doesn't work right now
-@route
-def practice_random(practice: Practice_mode) -> Page:
-    practice.reactant1 = random.choice(activity)
-    practice.reactant2 = random.choice(activity)
-    return practice_page(practice)
 
 @route
 def activity_list(state:State) -> Page:
@@ -166,13 +144,23 @@ def sim_activity_list(state:State) -> Page:
         ])
 
 @route
-def practice_explanation(state:State) -> Page:
+def practice_explanation(state:State, chosen: bool) -> Page:
+    question = state.questions[state.position]
+    state.position = random.randint(0,3) #right boundary will change
+    if chosen == question.will_work:
+        state.score = state.score + 1
+        message = "That's correct!"
+    else:
+        message = "Incorrect!"
     return Page(state, [
-        "This will tell you if you're right or wrong!",
+        Header(message),
+        "The expected products are", question.expected_products,
+        "\n",
+        "Check the activity series!",
         Button("Go Back","practice_page")
         ])
 
-start_server(State("", "", "","","",0))
 
-    
-    
+start_server(State("", "", "","","",0, QUESTIONS, 0))
+
+start_server(State("", "", "","","",0, QUESTIONS, 0))
