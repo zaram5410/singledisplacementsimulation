@@ -2,6 +2,10 @@ from drafter import *
 from bakery import assert_equal
 from dataclasses import dataclass
 import random
+
+from bakery import assert_equal
+import random
+
 activity = ["Li","K","Ba","Ca","Na","Mg","Al","Mn","Zn","Cr","Fe","Cd","Co","Ni","Sn","Pb","H2","Cu","Ag","Hg","Pt","Au"]
 
 def get_reactant_number(reactant: str) -> int:
@@ -25,9 +29,10 @@ def reaction_works(reactant1: str, reactant2: str) -> int:
     if reactant1_number < reactant2_number:
         return 1
     else:
-        return 0             
+        return 0                
                     
- 
+        
+    
 assert_equal(reaction_works("Li","Al"), True)
 assert_equal(reaction_works("Al","Li"), False)
 assert_equal(reaction_works("Ni","Na"), False)
@@ -159,8 +164,5 @@ def practice_explanation(state:State, chosen: bool) -> Page:
         "Check the activity series!",
         Button("Go Back","practice_page")
         ])
-
-
-start_server(State("", "", "","","",0, QUESTIONS, 0))
 
 start_server(State("", "", "","","",0, QUESTIONS, 0))
